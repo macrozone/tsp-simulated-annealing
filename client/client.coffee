@@ -136,29 +136,44 @@ createInitialTour = ->
 	
 
 
-
-tour = createInitialTour()
-console.log "initial", getLengthOfTour(tour), (cityNames[city] for city in tour)
-T = T_initial
-for i in [0..200]
-	for j in [1..200]
-
-		tour_new = twoOptNeighbor tour
-
-		s_old = getLengthOfTour tour
-		s_new = getLengthOfTour tour_new
-
-		p = metropolis s_new, s_old, T
+best = null
+bestTour = null
+START_WITH_BEST = yes
+INNER_LOOPS = 200
+OUTER_LOOPS = 200
+doExperiment = ->
 	
-		tour = if p is 1 or Math.random() < p then tour_new else tour
+	if best? and START_WITH_BEST
+		tour = bestTour
+	else
+		tour = createInitialTour()
+		console.log "initial", getLengthOfTour(tour), (cityNames[city] for city in tour) unless best?
+	
+	T = T_initial
+	for i in [1..OUTER_LOOPS]
+		for j in [1..INNER_LOOPS]
 
-	#console.log "outer", i, T, s_new, s_old
-	T = coolDown T
+			tour_new = twoOptNeighbor tour
 
-console.log "end", getLengthOfTour(tour), (cityNames[city] for city in tour)
+			s_old = getLengthOfTour tour
+			s_new = getLengthOfTour tour_new
+
+			p = metropolis s_new, s_old, T
+		
+			tour = if p is 1 or Math.random() < p then tour_new else tour
+
+		#console.log "outer", i, T, s_new, s_old
+		T = coolDown T
+
+	newLength = getLengthOfTour(tour)
+	if not best? or newLength < best
+		best = newLength
+		bestTour = tour
+	#console.log "end", newLength, (cityNames[city] for city in tour)
+	console.log "best", best, (cityNames[city] for city in bestTour)
 
 
-
+doExperiment() for i in [1..100]
 
 
 
